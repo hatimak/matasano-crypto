@@ -1,7 +1,14 @@
 class HexToBase64 {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NumberFormatException {
 		final String base64Index = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-		byte[] hexInput = args[0].getBytes();
+
+		String tmp = (args[0].length() % 2 == 0) ? args[0] : "0" + args[0];
+		int z = tmp.length() / 2;
+		int[] hexInput = new int[z];
+		while (--z >= 0) {
+			hexInput[z] = ((Integer.parseInt(tmp.substring(2 * z, (2 * z) + 1), 16) << 4) + Integer.parseInt(tmp.substring(2 * z + 1, (2 * z) + 2), 16));
+		}
+
 		StringBuffer base64Output = new StringBuffer("");
 		int ungroup = hexInput.length % 3, set, i, j;
 
