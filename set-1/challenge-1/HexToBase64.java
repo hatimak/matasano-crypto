@@ -1,35 +1,35 @@
 class HexToBase64 {
 	public static void main(String[] args) throws NumberFormatException {
-		final String base64Index = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+		String base64Index = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+		int i, j;
+		byte tmpByte;
 
-		String tmp = (args[0].length() % 2 == 0) ? args[0] : "0" + args[0];
-		int z = tmp.length() / 2;
-		int[] hexInput = new int[z];
-		while (--z >= 0) {
-			hexInput[z] = ((Integer.parseInt(tmp.substring(2 * z, (2 * z) + 1), 16) << 4) + Integer.parseInt(tmp.substring(2 * z + 1, (2 * z) + 2), 16));
-		}
+		byte padding = ((4 * args[0].length()) % 6 != 0) ? (byte)(6 - ((4 * args[0].length()) % 6)) : 0;
+		boolean[] bitArray = new boolean[(4 * args[0].length()) + padding];
 
-		StringBuffer base64Output = new StringBuffer("");
-		int ungroup = hexInput.length % 3, set, i, j;
-
-		for (i = 0; i < hexInput.length - ungroup; i += 3) {
-			set = (hexInput[i] << 16) + (hexInput[i + 1] << 8) + hexInput[i + 2];
+		for (i = 0; i < args[0].length(); i++) {
+			tmpByte = Byte.parseByte(args[0].substring(i, i + 1), 16);
 			for (j = 0; j < 4; j++) {
-				base64Output.append(base64Index.charAt((set & (0xFC0000 >> (6 * j))) >> 6 * (3 - j)));
+				bitArray[(4 * i) + j] = (((tmpByte & (0xF >> j)) >> (3 - j)) == 1) ? true : false;
 			}
 		}
-		if (ungroup == 1) {
-			set = hexInput[i] << 4;
-			for (j = 0; j < 2; j++) {
-				base64Output.append(base64Index.charAt((set & (0xFC0 >> (6 * j))) >> 6 * (1 - j)));
+		for (i = 4 * i; i < bitArray.length; i++) {
+			bitArray[i] = false;
+		}
+
+		StringBuffer base64Output = new StringBuffer();
+		for (i = 0; i < bitArray.length; i += 6) {
+			tmpByte = 0;
+			for (j = 0; j < 6; j++) {
+				tmpByte += (bitArray[i + j] ? 1 : 0) << (5 - j);
 			}
-			base64Output.append("==");
-		} else if (ungroup == 2) {
-			set = ((hexInput[i] << 8) + hexInput[i + 1]) << 2;
-			for (j = 0; j < 3; j++) {
-				base64Output.append(base64Index.charAt((set & (0x3F000 >> (6 * j))) >> 6 * (2 - j)));
-			}
+			base64Output.append(base64Index.charAt(tmpByte));
+		}
+
+		if (padding == 2) {
 			base64Output.append("=");
+		} else if (padding == 4) {
+			base64Output.append("==");
 		}
 
 		System.out.print(base64Output);
